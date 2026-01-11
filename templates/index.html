@@ -1,1 +1,26 @@
+<!doctype html>
+<html><head><style>
+body{font-family:sans-serif;padding:10px}
+.headline{border-bottom:1px dotted #ccc;padding:6px 0}
+a{display:block;padding:12px;margin:10px 0;border:1px solid #333;background:#eee;color:black;text-decoration:none}
+.small{font-size:0.8em;color:#555}
+</style></head><body>
 
+<h2>Today's Articles</h2>
+{% for t in titles %}
+<div class="headline">• {{t}}</div>
+{% endfor %}
+
+{% if epub_exists %}
+<a href="/download/epub">Download EPUB<div class="small">{{epub_size}}</div></a>
+{% endif %}
+
+{% if mobi_exists %}
+<a href="/download/mobi">Download MOBI<div class="small">{{mobi_size}}</div></a>
+{% endif %}
+
+<form action="/generate" method="post">
+<button style="padding:12px;width:100%">Generate New Edition</button>
+</form>
+
+</body></html>
