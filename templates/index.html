@@ -1,26 +1,280 @@
 <!doctype html>
-<html><head><style>
-body{font-family:sans-serif;padding:10px}
-.headline{border-bottom:1px dotted #ccc;padding:6px 0}
-a{display:block;padding:12px;margin:10px 0;border:1px solid #333;background:#eee;color:black;text-decoration:none}
-.small{font-size:0.8em;color:#555}
-</style></head><body>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Guardian Daily</title>
+    <style>
+        body {
+            font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+            margin: 0;
+            padding: 15px;
+            color: #111;
+            background-color: #fff;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+        }
 
-<h2>Today's Articles</h2>
-{% for t in titles %}
-<div class="headline">• {{t}}</div>
-{% endfor %}
+        h1 {
+            font-size: 1.5em;
+            border-bottom: 2px solid #111;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
 
-{% if epub_exists %}
-<a href="/download/epub">Download EPUB<div class="small">{{epub_size}}</div></a>
-{% endif %}
+        h2 {
+            font-size: 1.2em;
+            margin-top: 30px;
+            margin-bottom: 15px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: #333;
+            border-bottom: 1px solid #ccc;
+            padding-bottom: 5px;
+        }
 
-{% if mobi_exists %}
-<a href="/download/mobi">Download MOBI<div class="small">{{mobi_size}}</div></a>
-{% endif %}
+        /* Unified Button Style */
+        .btn {
+            display: block;
+            width: 100%;
+            padding: 15px;
+            margin-bottom: 15px;
+            text-align: center;
+            text-decoration: none;
+            font-size: 1.1em;
+            font-weight: bold;
+            color: #111;
+            background-color: #f4f4f4;
+            border: 2px solid #111;
+            box-sizing: border-box; /* Ensures padding doesn't affect width */
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
 
-<form action="/generate" method="post">
-<button style="padding:12px;width:100%">Generate New Edition</button>
-</form>
+        .btn:active {
+            background-color: #ddd;
+        }
 
-</body></html>
+        .btn-primary {
+            background-color: #111;
+            color: #fff;
+        }
+
+        .btn-download {
+            background-color: #fff;
+        }
+
+        .meta {
+            display: block;
+            font-size: 0.8em;
+            font-weight: normal;
+            color: #555;
+            margin-top: 4px;
+        }
+
+        /* Form Styling */
+        .control-group {
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border: 1px solid #ccc;
+            padding: 10px;
+            background: #fafafa;
+        }
+
+        label {
+            font-weight: bold;
+        }
+
+        input[type="number"] {
+            font-size: 1.2em;
+            padding: 5px;
+            width: 60px;
+            text-align: center;
+            border: 1px solid #999;
+        }
+
+        /* Article List */
+        .article-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .article-item {
+            padding: 8px 0;
+            border-bottom: 1px dotted #ccc;
+            line-height: 1.4;
+        }
+        
+        .article-item:last-child {
+            border-bottom: none;
+        }
+
+        .bullet {
+            color: #888;
+            margin-right: 5px;
+        }
+        
+        .empty-state {
+            font-style: italic;
+            color: #666;
+            margin-bottom: 15px;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Guardian Daily</h1>
+
+    <!-- Downloads Section (Top Priority) -->
+    {% if epub_exists or mobi_exists %}
+        {% if epub_exists %}
+        <a href="/download/epub" class="btn btn-download">
+            Download EPUB
+            <span class="meta">{{ epub_size }}</span>
+        </a>
+        {% endif %}
+
+        {% if mobi_exists %}
+        <a href="/download/mobi" class="btn btn-download">
+            Download MOBI
+            <span class="meta">{{ mobi_size }}</span>
+        </a>
+        <form action="/send-kindle" method="post" style="margin-top: 15px; border-top: 1px dashed #ccc; padding-top: 15px;">
+            <label for="custom_email" style="display:block; margin-bottom:5px; font-size: 0.9em;">Send to Kindle Email (Optional):</label>
+            <input type="email" id="custom_email" name="custom_email" placeholder="e.g. tom@kindle.com" style="width: 100%; padding: 10px; margin-bottom: 10px; box-sizing: border-box; border: 1px solid #ccc;">
+            <button type="submit" class="btn btn-download" style="border-style: dashed;">
+                📧 Send to Kindle
+            </button>
+        </form>
+        {% endif %}
+    {% else %}
+        <div class="empty-state">No eBook generated yet. Create one below.</div>
+    {% endif %}
+
+    <!-- Generation Section -->
+    <h2>Create New Edition</h2>
+    <form action="/generate" method="post">
+        <div class="control-group">
+            <label for="article_count">Articles per section:</label>
+            <input type="number" id="article_count" name="article_count" value="5" min="1" max="20">
+        </div>
+
+        <div style="margin-bottom: 20px; padding: 15px; background: #fafafa; border: 1px solid #ccc;">
+            <label style="display:block; margin-bottom: 10px;">Sections to Include:</label>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                <!-- Default Enabled -->
+                <label style="font-weight: normal; cursor: pointer;">
+                    <input type="checkbox" name="sections" value="UK News" checked> UK News
+                </label>
+                <label style="font-weight: normal; cursor: pointer;">
+                    <input type="checkbox" name="sections" value="World" checked> World
+                </label>
+                <label style="font-weight: normal; cursor: pointer;">
+                    <input type="checkbox" name="sections" value="Technology" checked> Technology
+                </label>
+                <label style="font-weight: normal; cursor: pointer;">
+                    <input type="checkbox" name="sections" value="Scotland" checked> Scotland
+                </label>
+                
+                <!-- Optional (Default Off) -->
+                <label style="font-weight: normal; cursor: pointer;">
+                    <input type="checkbox" name="sections" value="Science"> Science
+                </label>
+                <label style="font-weight: normal; cursor: pointer;">
+                    <input type="checkbox" name="sections" value="Business"> Business
+                </label>
+                <label style="font-weight: normal; cursor: pointer;">
+                    <input type="checkbox" name="sections" value="Money"> Money
+                </label>
+                <label style="font-weight: normal; cursor: pointer;">
+                    <input type="checkbox" name="sections" value="Film"> Film
+                </label>
+                <label style="font-weight: normal; cursor: pointer;">
+                    <input type="checkbox" name="sections" value="TV and Radio"> TV & Radio
+                </label>
+                <label style="font-weight: normal; cursor: pointer;">
+                    <input type="checkbox" name="sections" value="Games"> Games
+                </label>
+            </div>
+
+            <div style="margin-top: 15px; padding-top: 10px; border-top: 1px dashed #ddd;">
+                <strong style="display:block; margin-bottom: 5px; color: #555;">External Sources:</strong>
+                <label style="font-weight: normal; cursor: pointer;">
+                    <input type="checkbox" name="sections" value="BBC Top Stories"> <strong>BBC Top Stories</strong>
+                </label>
+                <label style="font-weight: normal; cursor: pointer; margin-left: 10px;">
+                    <input type="checkbox" name="sections" value="Hacker News (Comments)"> <strong>Hacker News (Comments)</strong>
+                </label>
+            </div>
+        </div>
+
+        <div id="generation-ui">
+            <button type="submit" id="generate-btn" class="btn btn-primary">Generate Edition</button>
+            <div id="loading-spinner" style="display:none; text-align:center; padding: 20px; background:#f9f9f9; border:1px solid #ddd;">
+                <div style="display:inline-block; width: 20px; height: 20px; border: 3px solid #ccc; border-top: 3px solid #333; border-radius: 50%; animation: spin 1s linear infinite; margin-right: 10px; vertical-align: middle;"></div>
+                <span style="vertical-align: middle; font-weight:bold;">Generating... this may take a minute.</span>
+            </div>
+        </div>
+    </form>
+
+    <style>
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    </style>
+
+    <script>
+        function checkStatus() {
+            var xhr = new XMLHttpRequest();
+            xhr.open('GET', '/status', true);
+            
+            xhr.onreadystatechange = function() {
+                if (xhr.readyState === 4 && xhr.status === 200) {
+                    var data = JSON.parse(xhr.responseText);
+                    var btn = document.getElementById('generate-btn');
+                    var spinner = document.getElementById('loading-spinner');
+                    
+                    if (data.status === 'running') {
+                        btn.style.display = 'none';
+                        spinner.style.display = 'block';
+                        // Poll again in 1 second
+                        setTimeout(checkStatus, 1000);
+                    } else if (data.status === 'complete') {
+                        // If we were waiting (spinner visible), reload to show download buttons
+                        if (spinner.style.display === 'block') {
+                           window.location.reload();
+                        }
+                    } else {
+                        // Idle or error
+                        btn.style.display = 'block';
+                        spinner.style.display = 'none';
+                    }
+                }
+            };
+            
+            xhr.send();
+        }
+        
+        // Start checking on load
+        // Verify addEventListener support, fallback to window.onload for very old devices
+        if (document.addEventListener) {
+            document.addEventListener('DOMContentLoaded', checkStatus);
+        } else {
+            window.onload = checkStatus;
+        }
+    </script>
+
+    <!-- Content Preview -->
+    {% if titles %}
+    <h2>Inside this Edition</h2>
+    <ul class="article-list">
+        {% for t in titles %}
+        <li class="article-item"><span class="bullet">&bull;</span> {{ t }}</li>
+        {% endfor %}
+    </ul>
+    {% endif %}
+
+</body>
+</html>

@@ -2,6 +2,9 @@ flask
 feedparser
 requests
 readability-lxml
-beautifulsoup4
 ebooklib
-pillow
+beautifulsoup4
+Pillow
+html5-parser
+lxml
+python-dotenv

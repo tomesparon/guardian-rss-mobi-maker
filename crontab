@@ -1,0 +1,2 @@
+0 9 * * * cd /app && /usr/local/bin/python generate.py >> /var/log/cron.log 2>&1
+# Empty line is required at the end of this file for a valid cron file.
